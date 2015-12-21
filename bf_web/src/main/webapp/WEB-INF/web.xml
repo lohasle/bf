@@ -1,0 +1,227 @@
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+	http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd">
+
+    <display-name>serverWeb</display-name>
+
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>weizyServer.root</param-value>
+    </context-param>
+
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            classpath*:applicationContext-dao.xml,classpath*:applicationContext-bo.xml
+        </param-value>
+    </context-param>
+
+    <!-- 环境配置 begin (dev、tester、product) -->
+    <context-param>
+        <param-name>spring.profiles.active</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>logbackConfigLocation</param-name>
+        <param-value>classpath:logback-dev.xml</param-value>
+    </context-param>
+    <!-- 环境配置 end -->
+
+    <!-- 添加对request监听 -->
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+
+    <!-- ContextLoaderListener -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <!-- 防止内存溢出监听器 -->
+    <listener>
+        <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+    </listener>
+
+
+    <!-- log4j  listener for spring -->
+    <!--<listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>-->
+
+    <!-- logback  listener for spring -->
+    <listener>
+        <listener-class>ch.qos.logback.ext.spring.web.LogbackConfigListener</listener-class>
+    </listener>
+
+
+    <!-- 编码过滤 -->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <!-- xss 过滤 -->
+    <filter>
+        <filter-name>XssSqlFilter</filter-name>
+        <filter-class>org.lohas.bf.web.filter.XssFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>XssSqlFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 浏览器不支持put,delete等method,由该filter将/blog?_method=delete转换为标准的http delete方法 -->
+    <filter>
+        <filter-name>httpMethodFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>httpMethodFilter</filter-name>
+        <servlet-name>springServlet</servlet-name>
+    </filter-mapping>
+
+    <!-- Shiro Security filter -->
+    <filter>
+        <filter-name>shiroFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>shiroFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <!-- 装饰模板 -->
+    <filter>
+        <filter-name>sitemesh</filter-name>
+        <filter-class>
+            com.opensymphony.sitemesh.webapp.SiteMeshFilter
+        </filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>sitemesh</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- logback -->
+    <filter>
+        <filter-name>MDCInsertingServletFilter</filter-name>
+        <filter-class>
+            ch.qos.logback.classic.helpers.MDCInsertingServletFilter
+        </filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>MDCInsertingServletFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <!-- DruidWebStatFilter -->
+    <filter>
+        <filter-name>DruidWebStatFilter</filter-name>
+        <filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+        <init-param>
+            <param-name>exclusions</param-name>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/cms/druid/*</param-value>
+        </init-param>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>DruidWebStatFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 配置 Druid 监控信息显示页面 -->
+    <servlet>
+        <servlet-name>DruidStatView</servlet-name>
+        <servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+        <init-param>
+            <!-- 允许清空统计数据 -->
+            <param-name>resetEnable</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>principalSessionName</param-name>
+            <param-value>BACKSTAGE_USER</param-value>
+        </init-param>
+        <init-param>
+            <param-name>profileEnable</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DruidStatView</servlet-name>
+        <url-pattern>/backstage/druid/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- springmvc -->
+    <servlet>
+        <servlet-name>springServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/spring-mvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <!-- ucenter -->
+    <!--<servlet>
+        <display-name>同步UC Server发出的操作指令</display-name>
+        <servlet-name>UC</servlet-name>
+        <servlet-class>org.lohas.bf.web.servlet.UcServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UC</servlet-name>
+        <url-pattern>/api/uc.php</url-pattern>
+    </servlet-mapping>-->
+
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <trim-directive-whitespaces>true</trim-directive-whitespaces>
+        </jsp-property-group>
+    </jsp-config>
+
+    <session-config>
+        <session-timeout>720</session-timeout>
+    </session-config>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/404.jsp</location>
+    </error-page>
+    <welcome-file-list>
+        <welcome-file>/index</welcome-file>
+    </welcome-file-list>
+</web-app>

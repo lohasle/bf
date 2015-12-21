@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>alert message</comment>
+	<entry key="unexpectedError">accitend！</entry>
+	<entry key="noDataError">{0} has not found！</entry>
+    <entry key="addError">add {0} error,{1} has exist </entry>
+    <entry key="updateError">update {0} error</entry>
+    <entry key="deleteError">delete {0} error</entry>
+</properties>

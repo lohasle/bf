@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+
+    <!-- classPathEntry:数据库的JDBC驱动,换成你自己的驱动位置 -->
+    <classPathEntry location="C:\Users\Administrator\.m2\repository\mysql\mysql-connector-java\5.1.21\mysql-connector-java-5.1.21.jar" />
+    <context id="MBG" targetRuntime="MyBatis3"
+             defaultModelType="conditional">
+<!--
+        <plugin type="SelectByPagePlugin" />
+-->
+        <plugin type="org.duoku.groom.mybatis.plugin.PaginationPlugin" />
+        <commentGenerator>
+        <!-- 去除自动生成的注释 -->
+        <property name="suppressAllComments" value="true" />
+
+    </commentGenerator>
+        <!--  jdbc 连接 更改为你的连接 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/bf_framework?useUnicode=true&amp;characterEncoding=UTF-8"
+                        userId="root"
+                        password="lohas">
+        </jdbcConnection>
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+
+        <!-- 实体 -->
+        <javaModelGenerator targetPackage="org.lohas.bf.dao.entities"
+                            targetProject="src\main\java">
+            <property name="enableSubPackages" value="false" />
+            <property name="rootClass" value="org.lohas.bf.dao.common.AbstractDO" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!-- xml mysql -->
+        <sqlMapGenerator targetPackage="mybatis.sqlmap.mysql"
+                         targetProject="src\main\resources">
+            <property name="enableSubPackages" value="false" />
+        </sqlMapGenerator>
+
+        <!-- mapper -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="org.lohas.bf.dao.mapper"
+                             targetProject="src\main\java">
+            <property name="enableSubPackages" value="false" />
+        </javaClientGenerator>
+
+        <!-- 生成表配置 -->
+
+        <table tableName="sys_user" domainObjectName="SysUser">
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+
+
+    </context>
+</generatorConfiguration>

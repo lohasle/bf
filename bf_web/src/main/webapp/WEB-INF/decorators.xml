@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<decorators defaultdir="/decorators">
+	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
+	<excludes>
+		<pattern>/backstage/index</pattern>
+		<pattern>/backstage/login</pattern>
+	</excludes>
+
+
+	<!-- cms 后台 管理装饰器 -->
+	<decorator name="backstage" page="backstage_decorator.jsp">
+		<pattern>/backstage/*</pattern>
+	</decorator>
+</decorators>

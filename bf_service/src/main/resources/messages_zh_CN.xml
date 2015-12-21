@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>提示消息</comment>
+    <entry key="unexpectedError">意外错误！</entry>
+	<entry key="noDataError">{0}不存在！</entry>
+    <entry key="addErrorHaveOne">添加{0}错误,{1}已存在</entry>
+    <entry key="addError">添加{0}错误</entry>
+    <entry key="updateError">更新{0}出错</entry>
+    <entry key="getTokenError">获取token失败</entry>
+    <entry key="loginOutError">登出失败</entry>
+    <entry key="loginSynOutError">同步登出失败</entry>
+    <entry key="deleteError">删除{0}出错</entry>
+    <entry key="phoneExist">电话{0}已存在</entry>
+    <entry key="unknownError">未知错误</entry>
+    <entry key="deleteSuccess">删除成功</entry>
+
+
+    <entry key="noUserDataError">没有找到此用户！</entry>
+    <entry key="userPwdError">密码错误！</entry>
+    <entry key="addUserErrorHaveOne">添加用户{0}错误,{1}已存在</entry>
+    <entry key="addUserError">添加用户{0}错误</entry>
+    <entry key="updateUserError">更新用户{0}出错</entry>
+    <entry key="deleteUserError">删除用户{0}出错</entry>
+    <entry key="loginOutSucc">退出成功</entry>
+    <entry key="userNameHaveOne">用户名{0}已存在</entry>
+    <entry key="ucRenameError">同步修改ucenter用户名失败</entry>
+    <entry key="ucRepwdError">同步修改ucenter密码失败,错误代码{0}</entry>
+    <entry key="ucSynLoginError">同步登录ucenter失败</entry>
+    <entry key="ucSynRegisterError">同步注册ucenter失败</entry>
+
+
+    <!-- 推送消息提醒短语 -->
+
+    <!-- 用户 -->
+    <entry key="pushUserInquiryOverTime">您的问诊"{0}"已到期关闭</entry>
+    <!--<entry key="pushUserInquiryReply">{0}医生应答了您的问诊："{1}"</entry>-->
+    <entry key="pushUserInquiryReply">{0}应答了您的问诊："{1}"</entry>
+    <entry key="pushUserInquiryNewMsg">{0}:"{1}"</entry>
+    <entry key="pushUserInquiryEvaluateOverTime">您对问诊"{0}"的效果满意吗，快去评价一下吧</entry>
+    <!--<entry key="pushUserInquiryReplyModify">{0}医生修改了应答内容""</entry>-->
+    <entry key="pushUserInquiryReplyModify">{0}医生修改了应答内容"{1}"</entry>
+
+    <!-- 电话订单 -->
+    <entry key="pushUserTelCreateSuccess">预约成功,请到点准时咨询</entry>
+    <entry key="pushUserTelNotice1">您的咨询还有{0}分钟开始后开始，请准时咨询</entry>
+    <entry key="pushUserTelNotice2">您的咨询已经开始了，快来看看吧</entry>
+
+    <!-- 医生 -->
+    <entry key="pushDoctorInquiryAccept">患者{0}已选择您的接诊，快去看看吧</entry>
+    <entry key="pushDoctorInquiryNewMsg">患者{0}:{1}</entry>
+    <entry key="pushDoctorInquiryEvaluate">收到新评价{0}</entry>
+
+
+</properties>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+       default-lazy-init="true">
+
+    <description>Shiro安全配置</description>
+
+    <!-- realm -->
+    <bean id="shiroDbRealm" class="org.lohas.bf.spring.shiro.realm.ShiroRealm">
+    </bean>
+
+    <!-- Shiro's main business-tier object for web-enabled applications -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="shiroDbRealm"/>
+        <!--<property name="cacheManager" ref="shiroEhcacheManager" />-->
+    </bean>
+
+
+    <!--&lt;!&ndash; filter app &ndash;&gt;
+    <bean id="appAuth"
+          class="org.lohas.bf.spring.shiro.filter.AppAuthFilter"/>
+    &lt;!&ndash; filter appv2 &ndash;&gt;
+    <bean id="appAuthV2"
+          class="org.lohas.bf.spring.shiro.filter.AppAuthFilterV2"/>-->
+    <!-- filter authc -->
+    <bean id="authc"
+          class="org.lohas.bf.spring.shiro.filter.CustomAuthenticationFilter"/>
+
+
+    <!-- Shiro Filter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="filters">
+            <util:map>
+                <!--<entry key="appAuth" value-ref="appAuth"/>
+                <entry key="appAuthV2" value-ref="appAuthV2"/>-->
+                <!--
+                                <entry key="authc" value-ref="authc"/>
+                -->
+            </util:map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- common -->
+                /static/**=anon
+                /upload/**=anon
+                /pay*=anon
+                /404.*=anon
+                /iframe*=anon
+                /index=anon
+                /download=anon
+                /captcha=anon
+                /login.json=anon
+                /uploadFile**=anon
+                /api/uc.php=anon
+
+                <!-- app -->
+
+
+                <!-- mobile -->
+
+
+                <!-- site -->
+
+
+                <!-- cms -->
+                /cms/backstage/login=anon
+                /cms/backstage/dologin.json=anon
+                /cms/backstage/login_out.json=anon
+                /cms/regions.json=anon
+                /cms/doctorTemp=anon
+
+                <!-- diy filter -->
+            </value>
+        </property>
+    </bean>
+
+    <!-- 用户授权信息Cache, 采用EhCache -->
+    <!--<bean id="shiroEhcacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">-->
+    <!--<property name="cacheManagerConfigFile" value="classpath:security/ehcache-shiro.xml"/>-->
+    <!--</bean>-->
+
+    <!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- AOP式方法级权限检查  -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="true"/>
+    </bean>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+</beans>

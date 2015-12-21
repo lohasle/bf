@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.lohas.bf.dao.mapper.LoggingEventMapper">
+    <resultMap id="LoggingData" type="org.lohas.bf.dao.entities.LoggingEvent">
+        <id column="event_id" property="eventId" jdbcType="BIGINT"/>
+        <result column="timestmp" property="timestmp" jdbcType="BIGINT"/>
+        <result column="logger_name" property="loggerName" jdbcType="VARCHAR"/>
+        <result column="level_string" property="levelString" jdbcType="VARCHAR"/>
+        <result column="thread_name" property="threadName" jdbcType="VARCHAR"/>
+        <result column="reference_flag" property="referenceFlag" jdbcType="SMALLINT"/>
+        <result column="formatted_message" property="formattedMessage" jdbcType="SMALLINT"/>
+        <result column="arg0" property="arg0" jdbcType="VARCHAR"/>
+        <result column="arg1" property="arg1" jdbcType="VARCHAR"/>
+        <result column="arg2" property="arg2" jdbcType="VARCHAR"/>
+        <result column="arg3" property="arg3" jdbcType="VARCHAR"/>
+        <result column="caller_filename" property="callerFilename" jdbcType="VARCHAR"/>
+        <result column="caller_class" property="callerClass" jdbcType="VARCHAR"/>
+        <result column="caller_method" property="callerMethod" jdbcType="VARCHAR"/>
+        <result column="caller_line" property="callerLine" jdbcType="CHAR"/>
+        <result column="timestmp" property="timestmp" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="LoggingDataDetail" type="org.lohas.bf.dao.entities.LoggingEvent">
+        <id column="event_id" property="eventId" jdbcType="BIGINT"/>
+        <result column="timestmp" property="timestmp" jdbcType="BIGINT"/>
+        <result column="logger_name" property="loggerName" jdbcType="VARCHAR"/>
+        <result column="level_string" property="levelString" jdbcType="VARCHAR"/>
+        <result column="thread_name" property="threadName" jdbcType="VARCHAR"/>
+        <result column="reference_flag" property="referenceFlag" jdbcType="SMALLINT"/>
+        <result column="formatted_message" property="formattedMessage" jdbcType="SMALLINT"/>
+        <result column="arg0" property="arg0" jdbcType="VARCHAR"/>
+        <result column="arg1" property="arg1" jdbcType="VARCHAR"/>
+        <result column="arg2" property="arg2" jdbcType="VARCHAR"/>
+        <result column="arg3" property="arg3" jdbcType="VARCHAR"/>
+        <result column="caller_filename" property="callerFilename" jdbcType="VARCHAR"/>
+        <result column="caller_class" property="callerClass" jdbcType="VARCHAR"/>
+        <result column="caller_method" property="callerMethod" jdbcType="VARCHAR"/>
+        <result column="caller_line" property="callerLine" jdbcType="CHAR"/>
+        <result column="timestmp" property="timestmp" jdbcType="TIMESTAMP"/>
+        <collection property="loggingEventExceptions" column="event_id" select="selectExceptionsByEventId">
+
+        </collection>
+        <collection property="loggingEventPropertys" column="event_id" select="selectEventPropertyByEventId">
+
+        </collection>
+    </resultMap>
+
+    <!-- 日记分页数据 level loggerName beginDate endDate -->
+    <select id="qryLoggingPage" resultMap="LoggingData" parameterType="map">
+        SELECT
+        timestmp,
+        substring(formatted_message,1,50) as formatted_message,
+        logger_name,
+        level_string,
+        thread_name,
+        event_id
+        FROM
+        logging_event
+        WHERE 1=1
+        <if test="params!=null and params.level != null and params.level != ''">
+            and level_string = #{params.level,jdbcType=VARCHAR}
+        </if>
+        <if test="params!=null and params.loggerName != null and params.loggerName != ''">
+            and logger_name like CONCAT('%',#{params.loggerName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="params!=null and params.content != null and params.content != ''">
+            and formatted_message like CONCAT('%',#{params.content,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="params!=null and params.beginDate != null and params.beginDate != ''">
+            and timestmp &gt;= #{params.beginDate,jdbcType=BIGINT}
+        </if>
+        <if test="params!=null and params.endDate != null and params.endDate != ''">
+            and timestmp &lt;= #{params.endDate,jdbcType=BIGINT}
+        </if>
+        <if test="page.order!=null">
+            order by ${page.order}
+        </if>
+        <if test="page.limitStart!=null and page.limitEnd!=null and page.limitEnd!=-1">
+            LIMIT #{page.limitStart} , #{page.limitEnd}
+        </if>
+    </select>
+
+    <select id="countByPage" resultType="int" parameterType="map">
+        SELECT
+        count(*)
+        FROM
+        logging_event
+        WHERE 1=1
+        <if test="params!=null and params.level != null and params.level != ''">
+            and level_string = #{params.level,jdbcType=VARCHAR}
+        </if>
+        <if test="params!=null and params.loggerName != null and params.loggerName != ''">
+            and logger_name like CONCAT('%',#{params.loggerName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="params!=null and params.content != null and params.content != ''">
+            and formatted_message like CONCAT('%',#{params.content,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="params!=null and params.beginDate != null and params.beginDate != ''">
+            and timestmp &gt;= #{params.beginDate,jdbcType=BIGINT}
+        </if>
+        <if test="params!=null and params.endDate != null and params.endDate != ''">
+            and timestmp &lt;= #{params.endDate,jdbcType=BIGINT}
+        </if>
+    </select>
+
+
+    <select id="selectByEventId" parameterType="int"
+            resultMap="LoggingDataDetail">
+         SELECT
+        timestmp,
+        formatted_message,
+        logger_name,
+        level_string,
+        thread_name,
+        event_id
+        FROM
+        logging_event
+        WHERE event_id = #{eventId,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectExceptionsByEventId" parameterType="int"
+            resultType="org.lohas.bf.dao.entities.LoggingEventException">
+        SELECT
+logging_event_exception.trace_line as traceLine,
+logging_event_exception.event_id as eventId,
+logging_event_exception.i as i
+FROM
+logging_event_exception
+WHERE event_id = #{eventId,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectEventPropertyByEventId" parameterType="int"
+            resultType="org.lohas.bf.dao.entities.LoggingEventProperty">
+        SELECT
+logging_event_property.event_id as eventId,
+logging_event_property.mapped_key as mappedKey,
+logging_event_property.mapped_value as mappedValue
+FROM
+logging_event_property
+WHERE event_id = #{eventId,jdbcType=INTEGER}
+    </select>
+
+
+</mapper>

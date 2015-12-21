@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <contextName>weizyServer开发配置</contextName>
+
+   <!-- <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%X{req.remoteHost} %X{req.requestURI} %date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>-->
+
+    <!-- 时间滚动输出 level为 DEBUG 日志 -->
+  <!--  <appender name="file-debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${catalina.home}/logs/server_debug.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%X{req.remoteHost} %X{req.requestURI} %date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>-->
+
+    <!-- 时间滚动输出 level为 INFO 日志 -->
+    <appender name="file-info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${catalina.home}/logs/server_info.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%X{req.remoteHost} %X{req.requestURI} %date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 时间滚动输出 level为 ERROR 日志 -->
+    <appender name="file-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${catalina.home}/logs/server_error.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%X{req.remoteHost} %X{req.requestURI} %date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--日志到数据库 -->
+    <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
+            <!--连接池 -->
+            <dataSource class="com.alibaba.druid.pool.DruidDataSource">
+                <driverClass>com.mysql.jdbc.Driver</driverClass>
+                <url>jdbc:mysql://127.0.0.1:3306/bf_framework?useUnicode=true&amp;autoReconnect=true&amp;rewriteBatchedStatements=TRUE</url>
+                <user>root</user>
+                <password>tobetcmno1</password>
+            </dataSource>
+            <insertHeaders>true</insertHeaders>
+        </connectionSource>
+    </appender>
+
+
+    <!-- 异步 -->
+    <appender name="ASYNC-CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="console" />
+        <queueSize>1024</queueSize>
+    </appender>
+    <appender name="ASYNC-DEBUG" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="file-debug" />
+        <queueSize>512</queueSize>
+    </appender>
+    <appender name="ASYNC-INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="file-info" />
+        <queueSize>512</queueSize>
+    </appender>
+    <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="file-error" />
+        <queueSize>512</queueSize>
+    </appender>
+    <appender name="ASYNC-DB" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="DB" />
+        <queueSize>512</queueSize>
+        <!--<includeCallerData>true</includeCallerData>-->
+    </appender>
+
+
+    <!-- mybatis sql -->
+    <logger name="org.lohas.bf.dao.mapper" level="DEBUG"/>
+    <logger name="org.lohas.bf.utils.NetworkUtil" level="WARN"/>
+    <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" level="WARN"/>
+
+
+
+    <!-- 指定项目可输出的最低级别日志 异步输出 -->
+    <root level="INFO">
+        <appender-ref ref="ASYNC-CONSOLE"/>
+<!--
+        <appender-ref ref="ASYNC-DEBUG"/>
+-->
+        <appender-ref ref="ASYNC-INFO"/>
+        <appender-ref ref="ASYNC-ERROR"/>
+        <appender-ref ref="ASYNC-DB"/>
+    </root>
+</configuration>
