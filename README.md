@@ -2,4 +2,4 @@
 bf dev framework  
 
 
-http://layer.layui.com/
+layer.layui.com/
