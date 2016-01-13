@@ -21,7 +21,7 @@
     </commentGenerator>
         <!--  jdbc 连接 更改为你的连接 -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://localhost:3306/bf_framework?useUnicode=true&amp;characterEncoding=UTF-8"
+                        connectionURL="jdbc:mysql://localhost:3306/weizy_server?useUnicode=true&amp;characterEncoding=UTF-8"
                         userId="root"
                         password="lohas">
         </jdbcConnection>
