@@ -44,7 +44,6 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
     private Logger logger = LoggerFactory.getLogger(CommonServiceImpl.class);
 
 
-
     public String[] uploadImg(HttpServletRequest request, MultipartFile file, UploadFileImgBean uploadFileImgBean) throws IOException, UploadException {
 
         // check
@@ -53,7 +52,7 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
 
 
         String basePath = request.getServletContext().getRealPath("/");// 项目绝对跟路径
-        logger.info("----------:>"+file.getOriginalFilename());
+        logger.info("----------:>" + file.getOriginalFilename());
         String[] fileTypeAndName = FileUtils.getFileNameAndExt(file.getOriginalFilename());
 //        String fileName = fileTypeAndName[0];
         String fileType = fileTypeAndName[1];
@@ -65,7 +64,7 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
             throw new UploadException("请上传图片类型");
         }
 
-        if(file==null||file.getSize()==0){
+        if (file == null || file.getSize() == 0) {
             throw new UploadException("请上传文件");
         }
 
@@ -88,7 +87,7 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
             parentFile.mkdirs();
         }
 
-        resultImgs[0] =  rePath + "/" + sourceUUID +"."+ fileType;
+        resultImgs[0] = rePath + "/" + sourceUUID + "." + fileType;
         String sourcePath = basePath + resultImgs[0];// 原文件 地址
         FileUtils.saveByteToFile(file.getBytes(), sourcePath);
 
@@ -97,13 +96,13 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
         if (imgScale.getScalaSize() != null) {
             //按照比例压缩
             resultImgs[1] = rePath + "/" + sourceUUID + "_min." + fileType;
-            String sourceMinPath =basePath + resultImgs[1];// 原文件 地址
+            String sourceMinPath = basePath + resultImgs[1];// 原文件 地址
             ImageUtils.scale(sourcePath, sourceMinPath, imgScale.getScalaSize());
         } else if (imgScale.getHeight() != null && imgScale.getWidth() != null) {
             //按照宽高压缩
-            resultImgs[1] = rePath + "/"+ sourceUUID + "_" + imgScale.getWidth() +
-                    "_" + imgScale.getHeight()+"." + fileType;
-            String sourceMinPath =basePath + resultImgs[1] ;// 原文件 地址
+            resultImgs[1] = rePath + "/" + sourceUUID + "_" + imgScale.getWidth() +
+                    "_" + imgScale.getHeight() + "." + fileType;
+            String sourceMinPath = basePath + resultImgs[1];// 原文件 地址
 
             ImageUtils.scale(sourcePath, sourceMinPath, imgScale.getScalaSize());
         } else {
@@ -138,9 +137,9 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
             //父文件不存在 创建
             parentFile.mkdirs();
         }
-        String sourcePath = basePath + rePath + "/" + sourceUUID +"."+ fileType;// 原文件 地址
+        String sourcePath = basePath + rePath + "/" + sourceUUID + "." + fileType;// 原文件 地址
         FileUtils.saveByteToFile(file.getBytes(), sourcePath);
-        return rePath + "/" + sourceUUID +"."+ fileType;
+        return rePath + "/" + sourceUUID + "." + fileType;
     }
 
 
@@ -156,7 +155,7 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
         //相对路径
         String rePath = model + new SimpleDateFormat("yyyyMMdd").format(new Date());// 相对文件父路径
 
-        final String reFilePath =rePath+"/"+String.valueOf(System.currentTimeMillis())+".jpg"; //保存文件的相对路径
+        final String reFilePath = rePath + "/" + String.valueOf(System.currentTimeMillis()) + ".jpg"; //保存文件的相对路径
         final String minImg = ImageUtils.buildMinPath(reFilePath);
 
 
@@ -176,24 +175,25 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
                 HttpResponse response = null;
                 try {
                     response = httpClient.execute(httpGet);
-                    InputStream inputStream =  response.getEntity().getContent();
+                    InputStream inputStream = response.getEntity().getContent();
                     //保存文件
-                    FileUtils.saveInputStreamToFile(inputStream,basePath+reFilePath);
+                    FileUtils.saveInputStreamToFile(inputStream, basePath + reFilePath);
                     //压缩
-                    ImageUtils.scale(basePath+reFilePath, basePath+reFilePath,1);
-                    ImageUtils.scale(basePath+reFilePath, basePath+minImg,0.6);
+                    ImageUtils.scale(basePath + reFilePath, basePath + reFilePath, 1);
+                    ImageUtils.scale(basePath + reFilePath, basePath + minImg, 0.6);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
             }
         });
 
-        return new String[]{reFilePath,minImg};
+        return new String[]{reFilePath, minImg};
     }
 
     /**
      * 验证手机验证码
      * 默认两分钟内有效
+     *
      * @param phone
      * @param sessionKey
      * @param session
@@ -214,9 +214,9 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
             Date cdate = DateUtils.parseDate((String) map.get("createDate"), new String[]{"yyyyMMddHHmmss"});
             cdate = DateUtils.addMinutes(cdate, 2);
 
-            if(!phone.equals(toPhone)){
+            if (!phone.equals(toPhone)) {
                 //不是该手机
-                return new Message(Message.STATE_FALSE,"手机号错误");
+                return new Message(Message.STATE_FALSE, "手机号错误");
             }
 
             if (!yzm1.equals(yzm)) {
@@ -230,9 +230,9 @@ public class CommonServiceImpl extends BasicServiceImpl implements CommonService
             }
 
             // 通过
-            return new Message(Message.STATE_TRUE,"ok");
+            return new Message(Message.STATE_TRUE, "ok");
         } catch (ParseException e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
             throw new ServiceException("短信验证失败");
         }
 

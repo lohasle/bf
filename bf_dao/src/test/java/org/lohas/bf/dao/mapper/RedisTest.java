@@ -50,17 +50,6 @@ public class RedisTest extends SpringTransactionalTestCase {
 
     }
 
-    @Test
-    public void test2() {
-        List testList = new ArrayList();
-        testList.add(1);
-        testList.add(2);
-        listRedisTemplate.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
-        listRedisTemplate.opsForValue().set("userList", testList);
-        List list = listRedisTemplate.opsForValue().get("userList");
-        System.out.println(list);
-    }
-
 
     public static Jedis getJedis(){
         Jedis jedis = new Jedis("localhost",6379);
@@ -68,22 +57,4 @@ public class RedisTest extends SpringTransactionalTestCase {
         return jedis;
     }
 
-    public static void main(String[] args) {
-        for(int j=0;j<10;j++){
-            final int k = j;
-            final long a = System.currentTimeMillis();
-            ThreadPollExecutor.exeThread(new Runnable() {
-                final Jedis jedis = getJedis();
-
-                @Override
-                public void run() {
-                    for (int i = 0; i < 100000; i++) {
-//                        jedis.set(k + ":test:" + i, "test" + i);
-                        jedis.del(k + ":test:" + i);
-                    }
-                    System.out.println(Thread.currentThread().toString() +k+"耗时 " + (System.currentTimeMillis() - a));
-                }
-            });
-        }
-    }
 }

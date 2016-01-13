@@ -36,5 +36,5 @@
     <task:executor id="myExecutor" pool-size="5-25" queue-capacity="100"/>
     <task:scheduler id="myScheduler" pool-size="10"/>
 
-    <import resource="classpath:security/applicationContext-shiro.xml"></import>
+    <!--<import resource="classpath:security/applicationContext-shiro.xml"></import>-->
 </beans>

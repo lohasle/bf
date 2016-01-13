@@ -51,8 +51,7 @@
         </javaClientGenerator>
 
         <!-- 生成表配置 -->
-
-        <table tableName="sys_user" domainObjectName="SysUser">
+        <table tableName="sns_user" domainObjectName="SnsUser">
             <generatedKey column="id" sqlStatement="MySql" identity="true" />
         </table>
 
