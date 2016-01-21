@@ -1,5 +1,7 @@
 package org.lohas.bf.pojo;
 
+import org.apache.commons.net.util.Base64;
+import org.lohas.bf.utils.qq.User;
 import org.lohas.bf.utils.wx.bean.WxUserInfo;
 
 import java.io.Serializable;
@@ -22,7 +24,7 @@ public class LoginUserBean implements Serializable {
     private String userName;
     //电话号码
     private String phone;
-    //密码
+    //密码(经过base64加密过的密码)
     private String password;
     //经度
     private BigDecimal lng;
@@ -43,6 +45,9 @@ public class LoginUserBean implements Serializable {
 
     //ext   第三方  微信账号
     private WxUserInfo wxUserInfo;
+
+    //qq账号
+    private User qqUser;
 
 
     /**
@@ -120,6 +125,15 @@ public class LoginUserBean implements Serializable {
         return password;
     }
 
+    /**
+     * 经过base64解码的密码
+     * @return
+     */
+    public String getPasswordOnDecodeBase64(){
+        String password = new String(Base64.decodeBase64(this.password));
+        return password;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -184,5 +198,13 @@ public class LoginUserBean implements Serializable {
 
     public void setRegionId(Integer regionId) {
         this.regionId = regionId;
+    }
+
+    public User getQqUser() {
+        return qqUser;
+    }
+
+    public void setQqUser(User qqUser) {
+        this.qqUser = qqUser;
     }
 }

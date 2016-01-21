@@ -15,6 +15,6 @@ public class UserServiceImplTest extends SpringTransactionalTestCase {
 
     @Test
     public void testGetUser() throws Exception {
-        userService.getUser();
+        userService.getUser("1");
     }
 }

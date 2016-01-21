@@ -1,5 +1,6 @@
 package org.lohas.bf.services.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -9,14 +10,20 @@ import org.lohas.bf.constant.Constant;
 import org.lohas.bf.constant.exception.ServiceException;
 import org.lohas.bf.constant.exception.UploadException;
 import org.lohas.bf.pojo.Message;
+import org.lohas.bf.pojo.MessageErrorCode;
 import org.lohas.bf.pojo.UploadFileImgBean;
 import org.lohas.bf.security.HttpSessionKey;
 import org.lohas.bf.services.CommonService;
 import org.lohas.bf.services.base.BasicServiceImpl;
 import org.lohas.bf.spring.WebUtils;
+import org.lohas.bf.utils.StringUtil;
 import org.lohas.bf.utils.ThreadPollExecutor;
 import org.lohas.bf.utils.file.FileUtils;
 import org.lohas.bf.utils.img.ImageUtils;
+import org.lohas.bf.utils.ucenterapi.Client;
+import org.lohas.bf.utils.ucenterapi.UcUserInfo;
+import org.lohas.bf.utils.ucenterapi.XMLHelper;
+import org.lohas.bf.utils.ucenterapi.dz.UcAuthCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,6 +38,8 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +52,183 @@ import java.util.regex.Pattern;
 public class CommonServiceImpl extends BasicServiceImpl implements CommonService {
     private Logger logger = LoggerFactory.getLogger(CommonServiceImpl.class);
 
+
+    @Override
+    public Client getUcClient() {
+        return uClient;
+    }
+
+    @Override
+    public Map ucSynRegister(String ucUserName, String pwd) {
+        return uc_syn_register(ucUserName, pwd);
+    }
+
+    /**
+     * 同步注册ucenter
+     *
+     * @param userName
+     * @param password
+     * @return
+     */
+    @Override
+    public Boolean ucSynRegister2(String userName, String password) {
+        Map ucMap = ucSynRegister(userName, password);
+
+        Integer ucresult = (Integer) ucMap.get("code");
+        if (ucresult < 0 || ucresult == null) {
+            //注册失败
+            logger.debug("ucenter--->" + userName + "注册失败");
+        } else {
+            //注册uc成功 登录下
+            String result = uClient.uc_user_login(userName, password);
+            LinkedList<String> rs = XMLHelper.uc_unserialize(result);
+            if (rs.size() > 0 && Integer.parseInt(rs.get(0)) > 0) {
+                //注册成功
+                logger.info("ucenter---->用户名:" + userName + "  密码:" + password + "  注册成功");
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * 更改ucenter 名称
+     *
+     * @return -1 登录失败
+     */
+    public String ucSynChangeName(String newUserName,String ucToken) {
+        String[] nameAndPwd = UcAuthCode.getNameAndPwd(ucToken, Constant.UC_TOKEN_KEY);
+        String ucUserName = nameAndPwd[0];
+        String pwd = nameAndPwd[1];
+        if(ucUserName.equals(newUserName)){
+            return "1";
+        }
+        try {
+            //登录ucenter 取得uc用户信息
+            UcUserInfo ucUserInfo = UcUserInfo.getUcUserInfo(uClient.uc_user_login(ucUserName, pwd));
+            if (ucUserInfo.getUid() > 0) {
+                //登录成功
+                String result = uClient.uc_user_synrename(String.valueOf(ucUserInfo.getUid()), ucUserName, newUserName);
+                if (!"1".equals(result)) {
+                    logger.debug("uc--->" + newUserName + "用户名已存在");
+                    throw new ServiceException("用户名" + newUserName + "已存在");
+                }
+                logger.info("uc-discuz modify userName-->" + ucUserName + "--->" + newUserName);
+                return result;
+            } else {
+                //登录失败
+                throw new ServiceException("社区登录失败，无权限");
+            }
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage());
+        }
+
+    }
+
+    /**
+     * uc设置新的密码
+     *
+     * @param newPwd
+     * @param ucToken
+     * @return
+     */
+    @Override
+    public String ucUserSynRepwd(String newPwd, String ucToken) {
+        String[] nameAndPwd = UcAuthCode.getNameAndPwd(ucToken, Constant.UC_TOKEN_KEY);
+        String ucUserName = nameAndPwd[0];
+        String pwd = nameAndPwd[1];
+        return uClient.uc_user_synrepwd(ucUserName,pwd,newPwd);
+    }
+
+
+    /**
+     * discuz  用户名生成策略
+     *
+     * @param userName 用户名
+     * @param pwd      密码
+     * @param type     策略类型   doctor 医生   wxUser 微信  user普通用户
+     * @param count    运行次数
+     * @return
+     */
+    @Override
+    public String generateAndRegisterUcCode(String userName, String pwd, String type, int count) {
+        Client uClient = getUcClient();
+
+        String ucUserName = userName;
+
+        String _userName = userName;
+        if ("doctor".equals(type)) {
+            //医生
+            ucUserName = userName;
+
+            String lastStr = userName.substring(userName.length() - 1, userName.length());
+            String countStr = "";
+            if (StringUtils.isNumeric(lastStr)) {
+                countStr = String.valueOf(Integer.parseInt(lastStr) + 1);
+                userName = userName.substring(0, userName.length() - 1);
+            } else {
+                countStr = "2";
+            }
+            _userName = userName + countStr; // 准备下一次用户名 医生uc用户名 拼音加上+随机四位
+        } else if ("wxUser".equals(type)) {
+            // 微信 用户
+            ucUserName = userName.indexOf("_wx") <= -1 ? userName + "_wx" : userName; // 微信uc用户名 拼音加上+随机2位
+
+            // 准备下一次的用户名
+            _userName = userName.indexOf("_wx") <= -1 ? userName + StringUtil.RandomIntString(2) + "_wx" : userName.substring(0, userName.indexOf("_wx")) + StringUtil.RandomIntString(2) + "_wx";
+        } else if ("qqUser".equals(type)) {
+            // 微信 用户
+            ucUserName = userName.indexOf("_qq") <= -1 ? userName + "_qq" : userName; // qq uc用户名 拼音加上+随机2位
+
+            // 准备下一次的用户名
+            _userName = userName.indexOf("_qq") <= -1 ? userName + StringUtil.RandomIntString(2) + "_qq" : userName.substring(0, userName.indexOf("_qq")) + StringUtil.RandomIntString(2) + "_qq";
+        } else if ("user".equals(type)) {
+
+            //普通用户
+            ucUserName = userName;
+            count = 1;
+        }
+        Map<String, Object> ucMap = new HashMap<>();
+        if (count > 1) {
+            try {
+                ucMap = ucSynRegister(ucUserName, pwd);
+            } catch (ServiceException e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else {
+            ucMap = ucSynRegister(ucUserName, pwd);
+        }
+
+        Integer ucresult = (Integer) ucMap.get("code");
+        if (ucresult < 0 || ucresult == null) {
+            //注册失败
+            --count;
+            if (count == 0) {
+                return "";
+            }
+            logger.debug("ucenter--->" + userName + "注册失败,count:" + count);
+            return generateAndRegisterUcCode(_userName, pwd, type, count);
+        } else {
+            //注册uc成功 登录下
+            String result = uClient.uc_user_login(ucUserName, pwd);
+            LinkedList<String> rs = XMLHelper.uc_unserialize(result);
+            if (rs.size() > 0 && Integer.parseInt(rs.get(0)) > 0) {
+                //注册成功
+                logger.info("ucenter---->用户名:" + ucUserName + "  密码:" + pwd + "  注册成功");
+                return ucUserName;
+            } else {
+                //注册失败
+                --count;
+                uClient.uc_user_delete(String.valueOf(ucresult));//删除uc用户
+                logger.info("ucenter---->用户名不合要求，删除用户--->" + ucUserName);
+                if (count == 0) {
+                    return "";
+                }
+                return generateAndRegisterUcCode(_userName, pwd, type, count);
+            }
+        }
+    }
 
     public String[] uploadImg(HttpServletRequest request, MultipartFile file, UploadFileImgBean uploadFileImgBean) throws IOException, UploadException {
 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+    <description>Spring MongoDB配置</description>
+    <mongo:mongo host="localhost" port="27017">
+        <mongo:options connections-per-host="8"
+                       threads-allowed-to-block-for-connection-multiplier="4"
+                       connect-timeout="1000"
+                       max-wait-time="1500"
+                       auto-connect-retry="true"
+                       socket-keep-alive="true"
+                       socket-timeout="1500"
+                       slave-ok="true"
+                       write-number="1"
+                       write-timeout="0"
+                       write-fsync="true"/>
+    </mongo:mongo>
+    <mongo:db-factory dbname="passport" mongo-ref="mongo"/>
+
+    <!-- 自动扫描以下包的类 -->
+    <mongo:mapping-converter base-package="org.lohas.bf.dao.mongomodels"/>
+
+    <bean class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mongoConverter" ref="mappingMongoConverter"/>
+    </bean>
+
+
+    <!-- morphia -->
+    <!-- 数据库实例 -->
+    <bean id="mongoClient" class="com.mongodb.MongoClient">
+        <constructor-arg name="host" value="localhost"/>
+        <constructor-arg name="port" value="27017"/>
+    </bean>
+
+
+
+    <bean id="mappingContext" class="org.springframework.data.mongodb.core.mapping.MongoMappingContext"/>
+    <!-- 配置mongodb映射类型 -->
+    <bean id="mappingMongoConverter" class="org.springframework.data.mongodb.core.convert.MappingMongoConverter">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mappingContext" ref="mappingContext"/>
+        <property name="typeMapper" ref="defaultMongoTypeMapper"/>
+    </bean>
+
+    <!-- 默认Mongodb类型映射 -->
+    <bean id="defaultMongoTypeMapper" class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+        <constructor-arg name="typeKey">
+            <null/><!-- 这里设置为空,可以把 spring data mongodb 多余保存的_class字段去掉 -->
+        </constructor-arg>
+    </bean>
+
+
+
+
+    <!-- =============  morphia   ============= -->
+    <!-- morphia实例 -->
+    <bean id="morphia" class="org.mongodb.morphia.Morphia"/>
+
+    <!-- 库名称 -->
+    <bean id="dbName" class="java.lang.String">
+        <constructor-arg index="0" value="passport"/>
+    </bean>
+
+    <!-- datastore实例 -->
+    <bean id="dataStore" class="org.mongodb.morphia.DatastoreImpl">
+        <constructor-arg name="morphia" ref="morphia"/>
+        <constructor-arg name="mongoClient" ref="mongoClient"/>
+        <constructor-arg name="dbName" ref="dbName"/>
+    </bean>
+
+</beans>

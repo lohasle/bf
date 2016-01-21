@@ -1,6 +1,6 @@
 package org.lohas.bf.services;
 
-import org.lohas.bf.dao.entities.SnsUser;
+import org.lohas.bf.dao.mongomodels.UserModel;
 import org.lohas.bf.pojo.LoginUserBean;
 import org.lohas.bf.pojo.Message;
 import org.lohas.bf.services.base.BasicService;
@@ -20,6 +20,35 @@ public interface UserService extends BasicService {
     Message login(LoginUserBean userBean);
 
     /**
+     * 手机号码登陆
+     * @param userBean
+     * @return
+     */
+    Message loginByPhone(LoginUserBean userBean);
+
+    /**
+     * 用户名登录
+     * @param userBean
+     * @return
+     */
+    Message loginByUname(LoginUserBean userBean);
+
+
+    /**
+     * 微信登录
+     * @param userBean
+     * @return
+     */
+    Message loginByWechat(LoginUserBean userBean);
+
+    /**
+     * QQ登录
+     * @param userBean
+     * @return
+     */
+    Message loginByQQ(LoginUserBean userBean);
+
+    /**
      * 登出
      *
      * @param userId
@@ -28,21 +57,13 @@ public interface UserService extends BasicService {
     Message loginOut(String userId);
 
 
-    /**
-     * 登录检查
-     *
-     * @param userBean
-     * @return
-     */
-    Message checkLogin(LoginUserBean userBean);
-
 
     /**
      * 注册接口
      *
      * @return
      */
-    Message register(Map map);
+    Message registerByPhone(String phone,String password);
 
 
     /**
@@ -50,14 +71,15 @@ public interface UserService extends BasicService {
      *
      * @return
      */
-    Message getUser(String userId);
+    Message<UserModel> getUser(String userId);
 
     /**
      * 更新用户信息
-     *
+     * @param user  更新的用户信息
+     * @param map   jwt  相关参数
      * @return
      */
-    Message updateUser(SnsUser snsUser);
+    Message updateUser(UserModel user,Map map);
 
     /**
      * 刷新token
@@ -66,4 +88,10 @@ public interface UserService extends BasicService {
      */
     Message refreshToken(String oldToken);
 
+    /**
+     * 电话号码是否存在
+     * @param phone
+     * @return
+     */
+    boolean userExistByPhone(String phone);
 }

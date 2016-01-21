@@ -18,4 +18,29 @@ public interface BasicService {
     String getMessage(String msgId, Object... args);
 
 
+    /**
+     * 创建一个 jwt token
+     * @param uid
+     * @param uName
+     * @param avatar
+     * @param avs api 版本 可以为null
+     * @param issuer 发起者ip
+     * @return
+     */
+    String createToken(String uid,String uName,String avatar,String avs,String issuer);
+
+    /**
+     *
+     * @param uid
+     * @param uName
+     * @param avatar
+     * @param avs
+     * @param issuer
+     * @param key  key
+     * @param exp  过期时间 分为单位
+     * @return
+     */
+    String createToken(String uid,String uName,String avatar,String avs,String issuer,String key,Integer exp);
+
+
 }

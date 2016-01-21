@@ -93,4 +93,19 @@ public class Message<T> implements Serializable {
     private String token;     // token
     private String errorCode; //  错误代码
 
+    /**
+     * @param data
+     * @param token
+     * @param <T>
+     * @return
+     */
+    public static<T> Message successWithToken(T data,String token){
+        Message<T> tMessage = new Message<>(Message.STATE_TRUE, data);
+        tMessage.setToken(token);
+        return tMessage;
+    }
+
+    public boolean isSuccess(){
+        return Message.STATE_TRUE.equals(this.success);
+    }
 }

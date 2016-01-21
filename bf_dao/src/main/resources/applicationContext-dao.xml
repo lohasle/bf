@@ -87,6 +87,9 @@
     <!-- jdbcTmpl dao -->
     <bean id="commonDao" class="org.lohas.bf.dao.common.JdbcTemplateDAO"></bean>
 
+    <!-- spring-mongodb -->
+    <import resource="spring-mongodb.xml"></import>
+
 
     <!-- 使用annotation定义数据库事务 -->
     <tx:annotation-driven transaction-manager="sw"  proxy-target-class="true" />

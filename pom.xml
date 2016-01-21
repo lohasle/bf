@@ -205,6 +205,20 @@
                 <artifactId>jedis</artifactId>
                 <version>2.7.3</version>
             </dependency>
+
+
+            <!-- mongodb -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-mongodb</artifactId>
+                <version>1.8.2.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb.morphia</groupId>
+                <artifactId>morphia-validation</artifactId>
+                <version>1.0.1</version>
+            </dependency>
+
             <!--================== NOSQL END ==================-->
 
 
@@ -487,6 +501,21 @@
                 <artifactId>weixin-java-mp</artifactId>
                 <version>${weixin.version}</version>
             </dependency>
+
+            <!-- jjwt -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>0.6.0</version>
+            </dependency>
+
+            <!-- qq weixin weibo -->
+            <dependency>
+                <groupId>com.belerweb</groupId>
+                <artifactId>social-sdk</artifactId>
+                <version>0.0.5</version>
+            </dependency>
+
             <!--================== 第三方 API END ==================-->
 
 

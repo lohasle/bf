@@ -51,8 +51,12 @@
         </javaClientGenerator>
 
         <!-- 生成表配置 -->
-        <table tableName="sns_user" domainObjectName="SnsUser">
+        <!--<table tableName="sns_user" domainObjectName="SnsUser">
             <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>-->
+
+        <table tableName="base_region" domainObjectName="BaseRegion">
+            <generatedKey column="area_id" sqlStatement="MySql" identity="true" />
         </table>
 
 

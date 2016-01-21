@@ -25,29 +25,12 @@ public enum MessageErrorCode implements Serializable {
     SYS_REG_PHONE_ERROR("1112", "请输入电话号码"),
     SYS_REG_PHONE_VALIDATE_ERROR("1113", "请先通过手机验证"),
     SYS_SMS_SEND_ERROR("1114", "短信发送失败"),
+    SYS_LOGIN_NAME_ERROR("1115", "用户名或者密码错误"),
+    SYS_LOGIN_WECHAT_ERROR("1116", "微信登录失败，请重试"),
+    SYS_LOGIN_QQ_ERROR("1117", "QQ登录失败，请重试"),
 
-
-
-    SCHEDULE_INVALID_ERROR("2001", "当前日程无效"),
-    SCHEDULE_EXPIRE_ERROR("2002", "当前日程已过期"),
-    SCHEDULE_USED_ERROR("2003", "当前日程已被安排"),
-    SCHEDULE_LOCKED_ERROR("2004", "当前日程已有用户预约"),
-    SCHEDULE_TIME_ERROR("2005", "此时间段，您已经预约了其他医生"),
-    SCHEDULE_NOT_FIND_ERROR("2006", "找不到指定日程"),
-
-
-    SCHEDULE_STATE_NOT_FIND_ERROR("3001", "日程使用了不存在的状态"),
-    SCHEDULE_STATE_COMPLETE_ERROR("3002", "日程不能手动修改为完成状态"),
-
-
-    SERVICE_NOT_FIND_ERROR("4001","找不到指定服务(商品)"),
-    DOCTOR_PHONE_NOT_FIND_ERROR("4101","医生电话为空，无法咨询"),
-    DOCTOR_NOT_VERIFY_ERROR("4102", "医生未通过审核，请审核后重试"),
-    UCPASS_ERROR("4201","电话咨询失败"),
-
-    INQUIRY_REPLYED_ERROR("4301","您已经回答过此问题,可以到我的回答查看"),
-    INQUIRY_ACCEPT_STATE_YES_ERROR("4302","回答已经采纳，不能修改"),
-    INQUIRY_DOCTOR_NOE_ENABLE_ERROR("4303","医生未通过审核，不能回答"),
+    JWT_CREATE_ERROR("2001", "jwt token 创建失败"),
+    SYS_REG_UC_ERROR("2002", "注册失败请重试"),
 
 
     ORDER_NOT_FIND_ERROR("5001", "找不到该订单"),
