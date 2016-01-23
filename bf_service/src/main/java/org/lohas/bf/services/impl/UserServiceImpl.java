@@ -10,6 +10,7 @@ import org.lohas.bf.pojo.MessageErrorCode;
 import org.lohas.bf.services.UserService;
 import org.lohas.bf.services.base.BasicServiceImpl;
 import org.lohas.bf.spring.event.pojo.UserEvent;
+import org.lohas.bf.utils.JwtUtil;
 import org.lohas.bf.utils.MD5Utils;
 import org.lohas.bf.utils.qq.User;
 import org.lohas.bf.utils.ucenterapi.UcUserInfo;
@@ -92,6 +93,7 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
         String selectStr = "{phone:'" + userBean.getPhone() + "'}";
         Message message = _loginValid(selectStr, userBean);
         if (message.isSuccess()) {
+            logger.info("用户："+userBean.getPhone()+"\t登录成功");
             return message;
         } else {
             //系统无此用户
@@ -113,9 +115,9 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
             return message;
         } else {
             // todo 系统无此用户 尝试 discuz 登录
+            String userName = userBean.getUserName();
+            String pwd = userBean.getPasswordOnDecodeBase64();
             try {
-                String userName = userBean.getUserName();
-                String pwd = userBean.getPasswordOnDecodeBase64();
 
                 String login_result = uClient.uc_user_login(userName, pwd);
                 UcUserInfo ucUserInfo = UcUserInfo.getUcUserInfo(login_result);
@@ -140,14 +142,19 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
                     String avatar = userModel.getAvatar();
 
                     String token = createToken(uid, uName, avatar, avs, uid);
+                    logger.info("用户："+userName+"\t登录成功");
                     return Message.successWithToken(userModel, token);
                 } else {
                     // uc 登录失败
                     return new Message(Message.STATE_FALSE, MessageErrorCode.SYS_LOGIN_NAME_ERROR);
                 }
-            } catch (Exception e) {
+            }catch (NullPointerException e){
                 logger.error(e.getMessage(), e);
-                logger.error("登录ucenter失败");
+                logger.error(userName+"\t"+pwd+"\t登录ucenter失败");
+                return new Message(Message.STATE_FALSE,MessageErrorCode.SYS_LOGIN_NAME_ERROR);
+            }catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                logger.error(userName+"\t"+pwd+"登录ucenter失败");
                 throw new ServiceException(getMessage("loginError"));
             }
         }
@@ -171,6 +178,7 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
         String selectStr = "{wechatOpenId:'" + openid + "'}";
         Message message = _loginValid(selectStr, userBean);
         if (message.isSuccess()) {
+            logger.info("用户（微信）："+wxUserInfo.getOpenid()+"\t登录成功");
             return message;
         } else {
             // 注册
@@ -212,6 +220,7 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
         String selectStr = "{qqOpenId:'" + openid + "'}";
         Message message = _loginValid(selectStr, userBean);
         if (message.isSuccess()) {
+            logger.info("用户（QQ）："+ qqUser.getOpenid()+"\t登录成功");
             return message;
         } else {
             // 注册
@@ -260,7 +269,6 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
     }
 
     /**
-     *
      * 登出
      *
      * @param userId
@@ -280,17 +288,26 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
      */
     @Override
     public Message registerByPhone(String phone, String password) {
+
+        boolean b = userExistByPhone(phone);
+        if(b){
+            return new Message(Message.STATE_FALSE,"号码"+phone+"已注册");
+        }
+
         String salt = String.valueOf(System.currentTimeMillis());
 
         UserModel userModel = new UserModel();
         userModel.setCreateTime(new Date());
         userModel.setPhone(phone);
+        userModel.setSalt(salt);
         userModel.setPwdHash(MD5Utils.encode(password, salt));
 
         try {
             mongoTemplate.save(userModel);
             String uid = userModel.getId();
             String token = createToken(uid, "", "", "", "");
+            userModel.setPwdHash(null);
+            userModel.setCreateTime(null);
             return Message.successWithToken(userModel, token);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -320,68 +337,73 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
      * @return
      */
     @Override
-    public Message updateUser(UserModel user,Map map) {
+    public Message updateUser(UserModel user, Map map) {
 
         UserModel upUser = getUser(user.getId()).getData();// 元数据
 
         String userName = user.getUserName();
 
         // check 排除自身和已有用户名
-        if(StringUtils.isNotBlank(userName)&&!userName.equals(upUser.getUserName())){
+        if (StringUtils.isNotBlank(userName) && !userName.equals(upUser.getUserName())) {
             long count = mongoTemplate.count(new BasicQuery("{userName:'" + userName + "'}"), UserModel.class);
-            if(count>0){
-                return new Message(Message.STATE_FALSE,"用户名"+userName+"已存在");
+            if (count > 0) {
+                return new Message(Message.STATE_FALSE, "用户名" + userName + "已存在");
             }
         }
 
         Update update = new Update();
-        if(StringUtils.isNotBlank(user.getSex())){
-            update.set("sex",user.getSex());
+        if (StringUtils.isNotBlank(user.getSex())) {
+            update.set("sex", user.getSex());
         }
-        if(StringUtils.isNotBlank(user.getAvatar())){
-            update.set("avatar",user.getAvatar());
+        if (StringUtils.isNotBlank(user.getAvatar())) {
+            update.set("avatar", user.getAvatar());
         }
-        if(user.getBirthDate()!=null){
-            update.set("birthDate",user.getBirthDate());
+        if (user.getBirthDate() != null) {
+            update.set("birthDate", user.getBirthDate());
         }
-        if(user.getPhone()!=null){
-            update.set("phone",user.getPhone());
+        if (user.getPhone() != null) {
+            update.set("phone", user.getPhone());
         }
         try {
-            String pwd = map.get("password").toString();// 修改的密码
-            if((StringUtils.isNotBlank(userName))||StringUtils.isNotBlank(pwd)){
+            String pwd = (String) map.get("password");// 修改的密码
+            if ((StringUtils.isNotBlank(userName)) || StringUtils.isNotBlank(pwd)) {
                 // 修改密码或者用户名，同步更新到ucenter
                 UserEvent userEvent = new UserEvent();
                 userEvent.setUserModel(upUser);
 
-                if(StringUtils.isBlank(upUser.getUcToken())){
+                if (StringUtils.isBlank(upUser.getUcToken())) {
                     // ucenter 新增
                     userEvent.setEventType(UserEvent.EVENT_CREATE);
-                }else{
+                } else {
                     // ucenter 更新
                     userEvent.setEventType(UserEvent.EVENT_UPDATE);
                 }
 
+                if(StringUtils.isBlank(pwd)){
+
+                    String[] nameAndPwd = UcAuthCode.getNameAndPwd(upUser.getUcToken(), Constant.UC_TOKEN_KEY);
+
+                }
                 userEvent.setPassword(pwd);
                 userEvent.setUserName(userName);
                 applicationEventPublisher.publishEvent(userEvent);  // 内部会自动更新 用户名和密码相关
             }
             upUser.setModifyTime(new Date());
-            mongoTemplate.updateFirst(new BasicQuery("{_id:'" + upUser.getId() + "'}"),update,UserModel.class); // 更新
+            mongoTemplate.updateFirst(new BasicQuery("{_id:'" + upUser.getId() + "'}"), update, UserModel.class); // 更新
 
             UserModel upUserOver = getUser(user.getId()).getData();// 读取新数据
 
             // 返回token
-            String avs = map.get("clientVersion").toString();
+            String avs = (String) map.get("clientVersion");
             String uid = upUserOver.getId();
             String uName = upUserOver.getUserName();
             String avatar = upUserOver.getAvatar();
 
             String token = createToken(uid, uName, avatar, avs, uid);
-            Message message = Message.successWithToken(upUser,token);
+            Message message = Message.successWithToken(upUser, token);
             return message;
-        }catch (Exception e){
-            logger.error(e.getMessage(),e);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             throw new ServiceException("修改失败");
         }
 
@@ -390,12 +412,18 @@ public class UserServiceImpl extends BasicServiceImpl implements UserService {
     /**
      * 刷新token
      *
-     * @param oldToken
+     * @param uid
      * @return
      */
     @Override
-    public Message refreshToken(String oldToken) {
-        return null;
+    public Message refreshToken(String uid,String version) {
+        UserModel userModel = mongoTemplate.findById(uid, UserModel.class);
+
+        String uName = userModel.getUserName();
+        String avatar = userModel.getAvatar();
+
+        String token = createToken(uid, uName, avatar, version, uid);
+        return Message.successWithToken("刷新成功",token);
     }
 
     /**

@@ -94,6 +94,16 @@
         <servlet-name>springServlet</servlet-name>
     </filter-mapping>
 
+    <filter>
+        <filter-name>httpPutFormContentFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HttpPutFormContentFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>httpPutFormContentFilter</filter-name>
+        <servlet-name>springServlet</servlet-name>
+    </filter-mapping>
+
     <!-- Shiro Security filter -->
   <!--  <filter>
         <filter-name>shiroFilter</filter-name>
@@ -107,7 +117,7 @@
     </filter-mapping>-->
 
     <!-- 装饰模板 -->
-    <filter>
+   <!-- <filter>
         <filter-name>sitemesh</filter-name>
         <filter-class>
             com.opensymphony.sitemesh.webapp.SiteMeshFilter
@@ -117,7 +127,7 @@
     <filter-mapping>
         <filter-name>sitemesh</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    </filter-mapping>-->
 
     <!-- logback -->
     <filter>

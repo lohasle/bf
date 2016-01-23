@@ -1,5 +1,6 @@
 package org.lohas.bf.spring.advice;
 
+import io.jsonwebtoken.JwtException;
 import org.lohas.bf.constant.exception.ServiceException;
 import org.lohas.bf.pojo.Message;
 import org.lohas.bf.pojo.MessageErrorCode;
@@ -33,6 +34,18 @@ public class ExceptionHandlerAdvice {
         logger.error(e.getMessage(), e);
         return new ResponseEntity(new Message(Message.STATE_FALSE, MessageErrorCode.SYS_SERVICE_PARAM_ERROR),
                 HttpStatus.OK);
+    }
+
+    /**
+     * Exception异常处理信息
+     *
+     * @return
+     */
+    @ExceptionHandler({JwtException.class})
+    public ResponseEntity exception(JwtException e) {
+        logger.error(e.getMessage(), e);
+        return new ResponseEntity(new Message(Message.STATE_FALSE, e.getMessage()),
+                HttpStatus.UNAUTHORIZED);
     }
 
     /**

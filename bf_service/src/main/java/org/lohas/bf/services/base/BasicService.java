@@ -24,7 +24,7 @@ public interface BasicService {
      * @param uName
      * @param avatar
      * @param avs api 版本 可以为null
-     * @param issuer 发起者ip
+     * @param issuer uid
      * @return
      */
     String createToken(String uid,String uName,String avatar,String avs,String issuer);

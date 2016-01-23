@@ -94,6 +94,7 @@ public class UserEventListener {
         update.set("pwdHash", pwdHash);
         update.set("modifyTime", new Date());
         update.set("ucToken", ucToken);
+        update.set("salt",salt);
         mongoTemplate.updateFirst(new BasicQuery("{_id:'" + userModel.getId() + "}'"), update, UserModel.class);
     }
 

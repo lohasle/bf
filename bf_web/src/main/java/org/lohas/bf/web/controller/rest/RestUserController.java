@@ -1,12 +1,9 @@
 package org.lohas.bf.web.controller.rest;
 
-import com.alibaba.fastjson.JSON;
 import com.belerweb.social.bean.Result;
 import com.belerweb.social.qq.connect.api.QQConnect;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.lohas.bf.constant.Constant;
@@ -38,7 +35,6 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +53,8 @@ public class RestUserController {
 
     @Autowired
     private CommonService commonService;
+
+    final String jwtSecret = SYS_GLOBAL.getConfig("jwt.secret");
 
 
     /**
@@ -152,7 +150,7 @@ public class RestUserController {
     @RequestMapping(value = "/exitByPhone", method = RequestMethod.GET)
     public ResponseEntity exitByPhone(String phone) {
         boolean boo = userService.userExistByPhone(phone);
-        Message msg = boo?new Message(Message.STATE_FALSE,"号码"+phone+"已注册"):new Message(Message.STATE_TRUE,"");
+        Message msg = boo?new Message(Message.STATE_FALSE,"号码"+phone+"已注册"):new Message(Message.STATE_TRUE,"此号码可使用");
         return new ResponseEntity(msg, HttpStatus.OK);
     }
 
@@ -171,11 +169,12 @@ public class RestUserController {
     }
 
     /**
-     * 取得用户信息
+     * 取得用户信息(本人)
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity getUser(@PathVariable String id) {
-        Message message = userService.getUser(id);
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity getUser(@RequestHeader ("Authorization") String authorization) {
+        String uid = getUserIdByAuthStr(authorization);
+        Message message = userService.getUser(uid);
         return new ResponseEntity(message, HttpStatus.OK);
     }
 
@@ -184,15 +183,17 @@ public class RestUserController {
      *
      * @return
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity update(@PathVariable String id,String password, UserModel userModel,HttpServletRequest request) {
+    @RequestMapping(method = RequestMethod.PUT)
+    public ResponseEntity update(@RequestHeader ("Authorization") String authorization,String password, UserModel userModel,HttpServletRequest request) {
 
+        String uid = getUserIdByAuthStr(authorization);
         Map map = new HashMap<>();
         map.put("clientVersion",request.getParameter("clientVersion"));
         map.put("lastLoginIp",NetworkUtil.getIpAddress(request));
-        map.put("password",new String(Base64.decodeBase64(password)));
-
-        userModel.setId(id);
+        if(StringUtils.isNotBlank(password)){
+            map.put("password",new String(Base64.decodeBase64(password)));
+        }
+        userModel.setId(uid);
         Message message = userService.updateUser(userModel,map);
         return new ResponseEntity(message, HttpStatus.OK);
     }
@@ -201,8 +202,10 @@ public class RestUserController {
     /**
      * 头像修改
      */
-    @RequestMapping(value = "/{id}/avatar", method = RequestMethod.PUT)
+    @RequestMapping(value = "/avatar", method = RequestMethod.PUT)
     public ResponseEntity updateAvatar(@RequestParam MultipartFile file,@RequestHeader ("Authorization") String authorization,HttpServletRequest request) throws IOException, UploadException {
+        String uid = getUserIdByAuthStr(authorization);
+
 
         UploadFileImgBean uploadFileImgBean = new UploadFileImgBean();
         uploadFileImgBean.setFileMaxSize(new Long(1024 * 1024 * 5));//文件最大5M
@@ -210,15 +213,17 @@ public class RestUserController {
         uploadFileImgBean.setModel(Constant.UPLOAD_MODEL_IMG_HEAD);
         String[] imgArr = commonService.uploadImg(request, file, uploadFileImgBean);
 
-        Jws<Claims> claimsJws = JwtUtil.parseToken(authorization, SYS_GLOBAL.getConfig("jwt.secret"));
-        System.out.println(JSON.toJSONString(claimsJws));
+        System.out.println(authorization);
 
-        /*UserModel userModel = new UserModel();
-        userModel.setId("");
+        UserModel userModel = new UserModel();
+        userModel.setId(uid);
         userModel.setAvatar(imgArr[0]);
-        userService.updateUser(userModel,null);*/
-
-        return new ResponseEntity(new Message<>(Message.STATE_TRUE, imgArr[0]), HttpStatus.OK);
+        Message message = userService.updateUser(userModel, null);
+        if(message.isSuccess()){
+            return new ResponseEntity(new Message<>(Message.STATE_TRUE, imgArr[0]), HttpStatus.OK);
+        }else{
+            return new ResponseEntity(new Message<>(Message.STATE_FALSE,"修改失败"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
@@ -227,8 +232,9 @@ public class RestUserController {
      *
      * @return
      */
-    @RequestMapping(value = "/{id}/password", method = RequestMethod.PUT)
-    public ResponseEntity findPwd(@PathVariable String id) {
+    @RequestMapping(value = "/password", method = RequestMethod.PUT)
+    public ResponseEntity findPwd(@RequestHeader ("Authorization") String authorization) {
+        String uid = getUserIdByAuthStr(authorization);
         return null;
     }
 
@@ -236,10 +242,17 @@ public class RestUserController {
     /**
      * 刷新token
      */
-    @RequestMapping(value = "/{id}/token", method = RequestMethod.GET)
-    public ResponseEntity refreshToken(@PathVariable String id) {
-        return null;
+    @RequestMapping(value = "/token", method = RequestMethod.GET)
+    public ResponseEntity refreshToken(@RequestHeader ("Authorization") String authorization,String version) {
+        String uid = getUserIdByAuthStr(authorization);
+        Message message = userService.refreshToken(uid,version);
+        return new ResponseEntity(message,HttpStatus.OK);
     }
 
 
+    private String getUserIdByAuthStr(String authorization){
+        Jws<Claims> claimsJws = JwtUtil.parseToken(authorization, jwtSecret);
+        JwtUtil.TokenBody body = JwtUtil.getBody(claimsJws);
+        return body.getUid();
+    }
 }

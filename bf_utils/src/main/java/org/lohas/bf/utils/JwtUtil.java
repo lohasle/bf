@@ -1,6 +1,7 @@
 package org.lohas.bf.utils;
 
 import io.jsonwebtoken.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +56,12 @@ public class JwtUtil {
     public static TokenBody getBody(Jws<Claims> jws) {
         Claims body = jws.getBody();
         TokenBody tokenBody = new TokenBody();
-        tokenBody.setUname(body.get("uname").toString());
+        tokenBody.setUname(String.valueOf(body.get("uname")));
         tokenBody.setIssuer(body.getIssuer());
         tokenBody.setExp(new Date(Long.parseLong(body.get("exp").toString())));
-        tokenBody.setAvatar(body.get("avatar").toString());
-        tokenBody.setAvs(body.get("avs").toString());
-        tokenBody.setUid(body.get("uid").toString());
+        tokenBody.setAvatar(String.valueOf(body.get("avatar")));
+        tokenBody.setAvs(String.valueOf(body.get("avs")));
+        tokenBody.setUid(String.valueOf(body.get("uid")));
         return tokenBody;
     }
     public static TokenHead getHead(Jws<Claims> jws) {

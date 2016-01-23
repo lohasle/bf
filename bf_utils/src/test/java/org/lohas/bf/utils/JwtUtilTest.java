@@ -3,6 +3,8 @@ package org.lohas.bf.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.crypto.DefaultJwtSignatureValidator;
+import io.jsonwebtoken.impl.crypto.JwtSignatureValidator;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Test;
 

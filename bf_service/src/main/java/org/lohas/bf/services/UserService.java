@@ -86,7 +86,7 @@ public interface UserService extends BasicService {
      *
      * @return
      */
-    Message refreshToken(String oldToken);
+    Message refreshToken(String uid,String version);
 
     /**
      * 电话号码是否存在

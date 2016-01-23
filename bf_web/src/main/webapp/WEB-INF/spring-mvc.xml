@@ -106,8 +106,6 @@
     </bean>
 
 
-
-
     <!-- 静态资源 -->
     <mvc:resources mapping="/static/**" location="/static/" cache-period="31556926"/>
 
@@ -122,17 +120,35 @@
     <!--  拦截器配置 -->
     <mvc:interceptors>
 
-        <!-- backstage -->
-         <mvc:interceptor>
-             <mvc:mapping path="/backstage/**"/>
-             <mvc:exclude-mapping path="/backstage/login,/backstage/loginOut"/>
-             <bean class="org.lohas.bf.spring.interceptors.BackStageInterceptors"/>
-         </mvc:interceptor>
+        <!-- rest api 统计 -->
         <mvc:interceptor>
+            <mvc:mapping path="/rest/**"/>
+            <bean class="org.lohas.bf.spring.interceptors.RestStatisticsInterceptors"/>
+        </mvc:interceptor>
+        
+        <!-- backstage -->
+        <mvc:interceptor>
+            <mvc:mapping path="/backstage/**"/>
+            <mvc:exclude-mapping path="/backstage/login,/backstage/loginOut"/>
+            <bean class="org.lohas.bf.spring.interceptors.BackStageInterceptors"/>
+        </mvc:interceptor>
+
+        <!-- rest api -->
+        <mvc:interceptor>
+            <mvc:mapping path="/rest/**"/>
+            <mvc:exclude-mapping path="/rest/user/exitByPhone"/>
+            <mvc:exclude-mapping path="/rest/user/registerByPhone"/>
+            <mvc:exclude-mapping path="/rest/user/login*"/>
+            <bean class="org.lohas.bf.spring.interceptors.RestInterceptors"/>
+        </mvc:interceptor>
+
+
+        <!-- look for -->
+       <!-- <mvc:interceptor>
             <mvc:mapping path="/**"/>
             <mvc:exclude-mapping path="/static/**"/>
             <bean class="org.lohas.bf.spring.interceptors.StopWatchHandlerInterceptor"/>
-        </mvc:interceptor>
+        </mvc:interceptor>-->
     </mvc:interceptors>
 
     <!-- 上传 -->
